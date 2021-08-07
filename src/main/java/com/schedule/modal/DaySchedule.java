@@ -10,7 +10,6 @@ import java.time.DayOfWeek;
 @Setter
 @Getter
 @NoArgsConstructor
-@EqualsAndHashCode
 @ToString
 public class DaySchedule {
 

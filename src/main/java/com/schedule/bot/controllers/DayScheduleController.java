@@ -4,37 +4,35 @@ import com.github.kshashov.telegram.api.TelegramMvcController;
 import com.github.kshashov.telegram.api.bind.annotation.BotController;
 import com.github.kshashov.telegram.api.bind.annotation.request.MessageRequest;
 import com.pengrad.telegrambot.model.Chat;
+import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SendPhoto;
+import com.schedule.bot.security.RolesAllowed;
 import com.schedule.dao.DayScheduleDao;
+import com.schedule.dao.StudentDao;
 import com.schedule.dao.StudentGroupDao;
-import com.schedule.dao.UserDao;
 import com.schedule.modal.DaySchedule;
-import com.schedule.modal.User;
+import com.schedule.modal.Role;
+import com.schedule.utils.Menu;
 import com.schedule.utils.ScheduleUpdater;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static com.schedule.utils.TelegramMenu.getDayMenu;
-import static com.schedule.utils.TelegramMenu.getMainMenu;
-
 @BotController
-public class ScheduleController implements TelegramMvcController {
+public class DayScheduleController implements TelegramMvcController {
 
     @Autowired
     DayScheduleDao dayScheduleDao;
     @Autowired
     StudentGroupDao studentGroupDao;
     @Autowired
-    UserDao userDao;
+    StudentDao studentDao;
 
     @Value("${telegram.bot.token}")
     private String token;
@@ -44,97 +42,90 @@ public class ScheduleController implements TelegramMvcController {
         return token;
     }
 
+    @RolesAllowed(roles = {Role.Admin, Role.User})
     @MessageRequest(value = "\uD83D\uDCDAРозклад на сьогодні\uD83D\uDCDA")
     public BaseRequest scheduleOnToday(Chat chat) {
         return getScheduleOnDay(chat, LocalDate.now().getDayOfWeek());
     }
 
+    @RolesAllowed(roles = {Role.Admin, Role.User})
     @MessageRequest(value = "\uD83D\uDDD3Розклад на інший день\uD83D\uDDD3")
     public BaseRequest scheduleOnAnotherDay(Chat chat) {
-        return new SendMessage(chat.id(), "Виберіть день").replyMarkup(getDayMenu());
+        return new SendMessage(chat.id(), "Виберіть день").replyMarkup(new ReplyKeyboardMarkup(Menu.Days.getMenu()).resizeKeyboard(true).selective(true));
     }
 
-    @MessageRequest(value = "⏰Розклад початку та завершення занять⏰")
-    public BaseRequest lessonSchedule(Chat chat) {
-        return new SendMessage(chat.id(), "1 пара  8:50 – 10:10\n" +
-                "\n" +
-                "2 пара  10:20 – 11:40\n" +
-                "\n" +
-                "3 пара  12:40 – 14:00\n" +
-                "\n" +
-                "4 пара  14:10 – 15:30\n" +
-                "\n" +
-                "5 пара 15:40 – 17:00\n" +
-                "\n" +
-                "6 пара 17:10 – 18:30").replyMarkup(getMainMenu());
-    }
-
+    @RolesAllowed(roles = {Role.Admin, Role.User})
     @MessageRequest(value = "Понеділок")
     public BaseRequest scheduleOnMonday(Chat chat) {
         return getScheduleOnDay(chat, DayOfWeek.MONDAY);
     }
 
+    @RolesAllowed(roles = {Role.Admin, Role.User})
     @MessageRequest(value = "Вівторок")
     public BaseRequest scheduleOnTuesday(Chat chat) {
         return getScheduleOnDay(chat, DayOfWeek.TUESDAY);
     }
 
+    @RolesAllowed(roles = {Role.Admin, Role.User})
     @MessageRequest(value = "Середа")
     public BaseRequest scheduleOnWednesday(Chat chat) {
         return getScheduleOnDay(chat, DayOfWeek.WEDNESDAY);
     }
 
+    @RolesAllowed(roles = {Role.Admin, Role.User})
     @MessageRequest(value = "Четвер")
     public BaseRequest scheduleOnThursday(Chat chat) {
         return getScheduleOnDay(chat, DayOfWeek.THURSDAY);
     }
 
+    @RolesAllowed(roles = {Role.Admin, Role.User})
     @MessageRequest(value = "П'ятниця")
     public BaseRequest scheduleOnFriday(Chat chat) {
         return getScheduleOnDay(chat, DayOfWeek.FRIDAY);
     }
 
+    @RolesAllowed(roles = {Role.Admin, Role.User})
     @MessageRequest(value = "Субота")
     public BaseRequest scheduleOnSaturday(Chat chat) {
         return getScheduleOnDay(chat, DayOfWeek.SATURDAY);
     }
 
+    @RolesAllowed(roles = {Role.Admin, Role.User})
     @MessageRequest(value = "Неділя")
     public BaseRequest scheduleOnSunday(Chat chat) {
         return getScheduleOnDay(chat, DayOfWeek.SUNDAY);
     }
 
-    @MessageRequest(value = "Головне меню\uD83D\uDD3C")
-    public BaseRequest backToMainMenu(Chat chat) {
-        return new SendMessage(chat.id(), "Головне меню").replyMarkup(getMainMenu());
-    }
-
     private BaseRequest getScheduleOnDay(Chat chat, DayOfWeek dayOfWeek) {
-        Optional<User> userOptional = userDao.getUserByChatId(chat.id());
-        if (!userOptional.isPresent() || userOptional.get().getStudentGroup() == null) {
-            return new SendMessage(chat.id(), "Помилка, введіть дані для реєстрації! /start");
-        }
-        Optional<DaySchedule> daySchedule = dayScheduleDao.getScheduleByDay(userOptional.get().getStudentGroup(), dayOfWeek);
+        Optional<DaySchedule> daySchedule = dayScheduleDao.getScheduleByDay(
+                studentDao.getStudentByChatId(chat.id()).get().getStudentGroup(), dayOfWeek);
         if (daySchedule.isPresent()) {
-            return new SendPhoto(chat.id(), daySchedule.get().getSchedule()).replyMarkup(getMainMenu());
+            return new SendPhoto(chat.id(), daySchedule.get().getSchedule());
         }
-        return new SendMessage(chat.id(), "В цей день у вашої групи немає занять!").replyMarkup(getMainMenu());
+        return new SendMessage(chat.id(), "В цей день у вашої групи немає занять!");
     }
 
-    @MessageRequest(value = "/upgradeSchedule")
-    public synchronized BaseRequest updateSchedule(Chat chat) {
-        return new SendMessage(chat.id(), updateSchedule() ? "Розклад оновлено!" : "Помилка, розклад не вдалося оновити.")
-                .replyMarkup(getMainMenu());
-    }
+    /**
+     * Three ways to update schedule:
+     * - on app start up
+     * - once in a while with cron expression
+     * - with command from bot
+     */
 
-    @EventListener(ApplicationReadyEvent.class)
+    /*@EventListener(ApplicationReadyEvent.class)
     public void updateScheduleAfterStartup() {
         updateSchedule();
-    }
+    }*/
 
     @Scheduled(cron = "${time.updateSchedule}", zone = "${time.zone}")
     private void updateScheduleEveryWeek() {
         updateSchedule();
+    }
+
+    @RolesAllowed(roles = {Role.Admin})
+    @MessageRequest(value = "/updateSchedule")
+    public String updateSchedule(Chat chat) {
+        return updateSchedule() ? "Розклад оновлено!" : "Помилка, розклад не вдалося оновити.";
     }
 
     public synchronized boolean updateSchedule() {

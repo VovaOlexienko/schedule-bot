@@ -1,5 +1,7 @@
 package com.schedule.modal;
 
+import com.schedule.bot.controllers.user.actions.Action;
+import com.schedule.bot.controllers.user.registration.states.RegistrationState;
 import com.schedule.utils.Constants;
 import lombok.*;
 
@@ -9,9 +11,8 @@ import javax.persistence.*;
 @Setter
 @Getter
 @NoArgsConstructor
-@EqualsAndHashCode
 @ToString
-public class User {
+public class Student {
 
     @Id
     @GeneratedValue(generator = Constants.ID_GENERATOR)
@@ -19,13 +20,19 @@ public class User {
 
     private Long chatId;
 
-    private Integer stateId;
+    private RegistrationState registrationState;
+
+    @Enumerated(EnumType.STRING)
+    private Action nextAction;
 
     @ManyToOne
     @JoinColumn
     private StudentGroup studentGroup;
 
-    public User(Long chatId) {
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    public Student(Long chatId) {
         this.chatId = chatId;
     }
 }

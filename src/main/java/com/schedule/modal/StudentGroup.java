@@ -11,7 +11,6 @@ import javax.persistence.Id;
 @Setter
 @Getter
 @NoArgsConstructor
-@EqualsAndHashCode
 @ToString
 public class StudentGroup {
 

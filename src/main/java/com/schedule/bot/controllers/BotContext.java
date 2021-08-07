@@ -1,4 +1,4 @@
-package com.schedule.bot;
+package com.schedule.bot.controllers;
 
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.User;
