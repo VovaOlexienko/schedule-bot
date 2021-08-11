@@ -1,10 +1,10 @@
-package com.schedule.bot.controllers.user.registration;
+package com.schedule.bot.user.registration;
 
 
-import com.schedule.bot.controllers.user.registration.states.ApprovedState;
-import com.schedule.bot.controllers.user.registration.states.EnterGroupState;
-import com.schedule.bot.controllers.user.registration.states.RegistrationState;
-import com.schedule.bot.controllers.user.registration.states.StartState;
+import com.schedule.bot.user.registration.states.ApprovedState;
+import com.schedule.bot.user.registration.states.EnterGroupState;
+import com.schedule.bot.user.registration.states.RegistrationState;
+import com.schedule.bot.user.registration.states.StartState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

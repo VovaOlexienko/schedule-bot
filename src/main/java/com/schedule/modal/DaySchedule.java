@@ -4,6 +4,7 @@ import com.schedule.utils.Constants;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.DayOfWeek;
 
 @Entity
@@ -17,12 +18,15 @@ public class DaySchedule {
     @GeneratedValue(generator = Constants.ID_GENERATOR)
     private Long id;
 
-    @Lob
     @ToString.Exclude
+    @NotNull
+    @Lob
     private byte[] schedule;
 
+    @NotNull
     DayOfWeek dayOfWeek;
 
+    @NotNull
     @ManyToOne
     @JoinColumn
     StudentGroup studentGroup;

@@ -1,11 +1,12 @@
 package com.schedule.modal;
 
-import com.schedule.bot.controllers.user.actions.Action;
-import com.schedule.bot.controllers.user.registration.states.RegistrationState;
+import com.schedule.bot.user.registration.states.RegistrationState;
 import com.schedule.utils.Constants;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.Locale;
 
 @Entity
 @Setter
@@ -20,17 +21,20 @@ public class Student {
 
     private Long chatId;
 
+    @NotNull
     private RegistrationState registrationState;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    private Action nextAction;
+    private Role role;
 
+    @NotNull
+    private Locale locale;
+
+    @NotNull
     @ManyToOne
     @JoinColumn
     private StudentGroup studentGroup;
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
 
     public Student(Long chatId) {
         this.chatId = chatId;

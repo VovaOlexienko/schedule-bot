@@ -1,14 +1,14 @@
-package com.schedule.bot.controllers.user.registration.states;
+package com.schedule.bot.user.registration.states;
 
-import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.schedule.bot.controllers.BotContext;
+import com.schedule.bot.user.registration.BotContext;
 import com.schedule.dao.StudentDao;
 import com.schedule.modal.Role;
 import com.schedule.modal.Student;
-import com.schedule.utils.Menu;
+import com.schedule.utils.KeyboardUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,16 +18,22 @@ public class StartState extends RegistrationState {
     StudentDao studentDao;
     @Autowired
     EnterGroupState enterGroupState;
+    @Autowired
+    KeyboardUtils keyboardUtils;
+    @Autowired
+    MessageSource messageSource;
 
     @Override
     public BaseRequest enter(BotContext context) {
         Student student = studentDao.getStudentByChatId(context.getChat().id()).orElse(new Student(context.getChat().id()));
         student.setRegistrationState(nextState());
+        if (context.getLocale() != null) {
+            student.setLocale(context.getLocale());
+        }
         student.setStudentGroup(null);
-        student.setNextAction(null);
         student.setRole(Role.Unregistered);
         studentDao.save(student);
-        return new SendMessage(context.getChat().id(), "Введіть номер вашої студентської групи. Всі номери груп можна переглянути за допомогою відповідної кнопки в меню.").replyMarkup(new ReplyKeyboardMarkup(Menu.StudentsGroups.getMenu()).resizeKeyboard(true).selective(true));
+        return new SendMessage(context.getChat().id(), messageSource.getMessage("enterGroupMessage", null, student.getLocale())).replyMarkup(keyboardUtils.getStudentsGroupsKeyboard(student.getLocale()));
     }
 
     @Override

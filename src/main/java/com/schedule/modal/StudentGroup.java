@@ -6,6 +6,7 @@ import lombok.*;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 @Setter
@@ -18,6 +19,7 @@ public class StudentGroup {
     @GeneratedValue(generator = Constants.ID_GENERATOR)
     private Long id;
 
+    @NotBlank
     private String number;
 
     public StudentGroup(String number){

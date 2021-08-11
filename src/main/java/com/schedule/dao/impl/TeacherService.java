@@ -4,6 +4,7 @@ import com.schedule.dao.TeacherDao;
 import com.schedule.modal.Teacher;
 import com.schedule.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -38,7 +39,12 @@ public class TeacherService implements TeacherDao {
     }
 
     @Override
-    public List<Teacher> getTeachersByFullname(String fullname) {
-        return teacherRepository.findByFullnameContainingIgnoreCaseOrderByFullname(fullname);
+    public List<Teacher> getAll(Pageable pageable) {
+        return teacherRepository.getAll(pageable);
+    }
+
+    @Override
+    public List<Teacher> getTeachersByFullname(String fullname, Pageable pageable) {
+        return teacherRepository.findByFullnameContainingIgnoreCase(fullname, pageable);
     }
 }

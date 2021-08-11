@@ -1,7 +1,7 @@
-package com.schedule.bot.controllers.user.registration.states;
+package com.schedule.bot.user.registration.states;
 
 import com.pengrad.telegrambot.request.BaseRequest;
-import com.schedule.bot.controllers.BotContext;
+import com.schedule.bot.user.registration.BotContext;
 
 public abstract class RegistrationState {
     public abstract BaseRequest enter(BotContext context);

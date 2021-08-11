@@ -1,16 +1,16 @@
-package com.schedule.bot.controllers.user.registration.states;
+package com.schedule.bot.user.registration.states;
 
-import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.schedule.bot.controllers.BotContext;
+import com.schedule.bot.user.registration.BotContext;
 import com.schedule.dao.StudentDao;
 import com.schedule.dao.StudentGroupDao;
 import com.schedule.modal.Role;
 import com.schedule.modal.Student;
 import com.schedule.modal.StudentGroup;
-import com.schedule.utils.Menu;
+import com.schedule.utils.KeyboardUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -26,19 +26,24 @@ public class EnterGroupState extends RegistrationState {
     StartState startState;
     @Autowired
     ApprovedState approvedState;
+    @Autowired
+    KeyboardUtils keyboardUtils;
+    @Autowired
+    MessageSource messageSource;
 
     @Override
     public BaseRequest enter(BotContext context) {
         Optional<StudentGroup> studentGroupOptional = studentGroupDao.getStudentGroupByNumber(context.getText());
-        if (!studentGroupOptional.isPresent()) {
-            return new SendMessage(context.getChat().id(), "Помилка, не існує групи з номером \"" + context.getText() + "\"! Будь-ласка введіть коректний номер вашої студентської групи. Всі номери груп можна переглянути за допомогою відповідної кнопки в меню.");
-        }
         Student student = studentDao.getStudentByChatId(context.getChat().id()).get();
+        if (!studentGroupOptional.isPresent()) {
+            return new SendMessage(context.getChat().id(), messageSource.getMessage("enterStudentGroupException", null, student.getLocale()))
+                    .replyMarkup(keyboardUtils.getStudentsGroupsKeyboard(student.getLocale()));
+        }
         student.setStudentGroup(studentGroupOptional.get());
         student.setRegistrationState(nextState());
         student.setRole(Role.User);
         studentDao.save(student);
-        return new SendMessage(context.getChat().id(), "Гарного користування ботом!").replyMarkup(new ReplyKeyboardMarkup(Menu.Main.getMenu()).resizeKeyboard(true).selective(true));
+        return new SendMessage(context.getChat().id(), messageSource.getMessage("goodLuckForUserMessage", null, student.getLocale())).replyMarkup(keyboardUtils.getMainKeyboard(student.getLocale()));
     }
 
     @Override

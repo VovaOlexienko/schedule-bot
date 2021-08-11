@@ -1,8 +1,8 @@
-package com.schedule.bot.controllers.user.registration.states;
+package com.schedule.bot.user.registration.states;
 
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.schedule.bot.controllers.BotContext;
+import com.schedule.bot.user.registration.BotContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
