@@ -1,19 +1,23 @@
 package com.schedule.modal;
 
 import com.schedule.utils.Constants;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 
+import static com.schedule.utils.StringUtils.isBlank;
+
 @Entity
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class Teacher {
 
     @Id
@@ -33,12 +37,16 @@ public class Teacher {
 
     private String phone;
 
-    public Teacher(String fullname, String universityEmail, String email, String tgNickname, String photoUrl, String phone){
-        this.fullname = fullname;
-        this.universityEmail = universityEmail;
-        this.email = email;
-        this.tgNickname = tgNickname;
-        this.photoUrl = photoUrl;
-        this.phone = phone;
+    public String getDescription() {
+        String s = "";
+        if (!isBlank(tgNickname)) s += "Telegram: " + tgNickname + "\n";
+        if (!isBlank(universityEmail)) s += universityEmail + "\n";
+        if (!isBlank(email)) s += email;
+        return s;
+    }
+
+    @Override
+    public String toString() {
+        return fullname + "\n" + getDescription();
     }
 }

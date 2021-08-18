@@ -19,7 +19,7 @@ public class StudentGroupService implements StudentGroupDao {
 
     @Override
     public Optional<StudentGroup> get(Long id) {
-        return Optional.of(studentGroupRepository.getById(id));
+        return Optional.ofNullable(studentGroupRepository.getById(id));
     }
 
     @Override
@@ -38,7 +38,7 @@ public class StudentGroupService implements StudentGroupDao {
     }
 
     @Override
-    public Optional<StudentGroup> getStudentGroupByNumber(String number) {
+    public Optional<StudentGroup> getByNumber(String number) {
         return Optional.ofNullable(studentGroupRepository.findByNumber(number));
     }
 }

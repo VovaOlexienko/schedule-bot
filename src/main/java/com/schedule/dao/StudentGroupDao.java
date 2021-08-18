@@ -6,5 +6,5 @@ import java.util.Optional;
 
 public interface StudentGroupDao extends Dao<StudentGroup> {
 
-    Optional<StudentGroup> getStudentGroupByNumber(String number);
+    Optional<StudentGroup> getByNumber(String number);
 }

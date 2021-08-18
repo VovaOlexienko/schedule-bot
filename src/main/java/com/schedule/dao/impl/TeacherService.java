@@ -20,7 +20,7 @@ public class TeacherService implements TeacherDao {
 
     @Override
     public Optional<Teacher> get(Long id) {
-        return Optional.of(teacherRepository.getById(id));
+        return Optional.ofNullable(teacherRepository.getById(id));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class TeacherService implements TeacherDao {
     }
 
     @Override
-    public List<Teacher> getTeachersByFullname(String fullname, Pageable pageable) {
+    public List<Teacher> getByFullname(String fullname, Pageable pageable) {
         return teacherRepository.findByFullnameContainingIgnoreCase(fullname, pageable);
     }
 }

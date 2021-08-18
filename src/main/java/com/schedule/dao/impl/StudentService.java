@@ -19,7 +19,7 @@ public class StudentService implements StudentDao {
 
     @Override
     public Optional<Student> get(Long id) {
-        return Optional.of(studentRepository.getById(id));
+        return Optional.ofNullable(studentRepository.getById(id));
     }
 
     @Override
@@ -38,7 +38,7 @@ public class StudentService implements StudentDao {
     }
 
     @Override
-    public Optional<Student> getStudentByChatId(Long chatId) {
+    public Optional<Student> getByChatId(Long chatId) {
         return Optional.ofNullable(studentRepository.findByChatId(chatId));
     }
 }

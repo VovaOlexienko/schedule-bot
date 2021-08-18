@@ -12,7 +12,7 @@ import javax.validation.constraints.NotBlank;
 @Setter
 @Getter
 @NoArgsConstructor
-@ToString
+@AllArgsConstructor
 public class StudentGroup {
 
     @Id
@@ -22,7 +22,8 @@ public class StudentGroup {
     @NotBlank
     private String number;
 
-    public StudentGroup(String number){
-        this.number = number;
+    @Override
+    public String toString() {
+        return number.contains(",") || number.contains(" ") ? "\"" + number + "\"" : number;
     }
 }

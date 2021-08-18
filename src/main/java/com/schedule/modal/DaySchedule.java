@@ -11,6 +11,7 @@ import java.time.DayOfWeek;
 @Setter
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @ToString
 public class DaySchedule {
 
@@ -30,10 +31,4 @@ public class DaySchedule {
     @ManyToOne
     @JoinColumn
     StudentGroup studentGroup;
-
-    public DaySchedule(byte[] schedule, DayOfWeek dayOfWeek, StudentGroup studentGroup) {
-        this.schedule = schedule;
-        this.dayOfWeek = dayOfWeek;
-        this.studentGroup = studentGroup;
-    }
 }

@@ -1,6 +1,6 @@
 package com.schedule.modal;
 
-import com.schedule.bot.user.registration.states.RegistrationState;
+import com.schedule.bot.user.states.UserState;
 import com.schedule.utils.Constants;
 import lombok.*;
 
@@ -22,7 +22,7 @@ public class Student {
     private Long chatId;
 
     @NotNull
-    private RegistrationState registrationState;
+    private UserState userState;
 
     @NotNull
     @Enumerated(EnumType.STRING)

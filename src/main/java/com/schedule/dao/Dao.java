@@ -5,11 +5,11 @@ import java.util.Optional;
 
 public interface Dao<T> {
 
+    List<T> getAll();
+
     Optional<T> get(Long id);
 
     T save(T obj);
 
     void delete(T obj);
-
-    List<T> getAll();
 }

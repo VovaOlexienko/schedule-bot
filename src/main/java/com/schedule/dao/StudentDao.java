@@ -6,5 +6,5 @@ import java.util.Optional;
 
 public interface StudentDao extends Dao<Student> {
 
-    Optional<Student> getStudentByChatId(Long chatId);
+    Optional<Student> getByChatId(Long chatId);
 }

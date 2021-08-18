@@ -13,5 +13,5 @@ public interface DayScheduleDao extends Dao<DaySchedule> {
 
     void deleteAll();
 
-    Optional<DaySchedule> getScheduleByDay(StudentGroup studentGroup, DayOfWeek dayOfWeek);
+    Optional<DaySchedule> getByDayAndStudentGroup(StudentGroup studentGroup, DayOfWeek dayOfWeek);
 }

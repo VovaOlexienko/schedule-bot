@@ -21,7 +21,7 @@ public class DayScheduleService implements DayScheduleDao {
 
     @Override
     public Optional<DaySchedule> get(Long id) {
-        return Optional.of(dayScheduleRepository.getById(id));
+        return Optional.ofNullable(dayScheduleRepository.getById(id));
     }
 
     @Override
@@ -50,7 +50,7 @@ public class DayScheduleService implements DayScheduleDao {
     }
 
     @Override
-    public Optional<DaySchedule> getScheduleByDay(StudentGroup studentGroup, DayOfWeek dayOfWeek) {
+    public Optional<DaySchedule> getByDayAndStudentGroup(StudentGroup studentGroup, DayOfWeek dayOfWeek) {
         return Optional.ofNullable(dayScheduleRepository.findByStudentGroupAndDayOfWeek(studentGroup, dayOfWeek));
     }
 }
