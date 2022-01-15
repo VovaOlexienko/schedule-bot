@@ -1,10 +1,18 @@
 package com.schedule.modal;
 
-import com.schedule.utils.Constants;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import java.time.DayOfWeek;
 
 @Entity
@@ -12,23 +20,18 @@ import java.time.DayOfWeek;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class DaySchedule {
 
     @Id
-    @GeneratedValue(generator = Constants.ID_GENERATOR)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ToString.Exclude
-    @NotNull
     @Lob
     private byte[] schedule;
 
-    @NotNull
     DayOfWeek dayOfWeek;
 
-    @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
     StudentGroup studentGroup;
 }

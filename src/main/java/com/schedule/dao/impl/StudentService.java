@@ -3,7 +3,7 @@ package com.schedule.dao.impl;
 import com.schedule.dao.StudentDao;
 import com.schedule.modal.Student;
 import com.schedule.repository.StudentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,10 +12,10 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class StudentService implements StudentDao {
 
-    @Autowired
-    StudentRepository studentRepository;
+    private final StudentRepository studentRepository;
 
     @Override
     public Optional<Student> get(Long id) {

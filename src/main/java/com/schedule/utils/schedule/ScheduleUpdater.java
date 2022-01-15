@@ -4,12 +4,19 @@ import com.schedule.dao.DayScheduleDao;
 import com.schedule.dao.StudentGroupDao;
 import com.schedule.modal.DaySchedule;
 import com.schedule.modal.StudentGroup;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
+@AllArgsConstructor
 public class ScheduleUpdater {
 
-    public void updateSchedule(StudentGroupDao studentGroupDao, DayScheduleDao dayScheduleDao, String scheduleFilename) throws Exception {
+    private final DayScheduleDao dayScheduleDao;
+    private final StudentGroupDao studentGroupDao;
+
+    public void updateSchedule(String scheduleFilename) throws Exception {
         ExcelParser excelParser = new ExcelParser();
         excelParser.parseGroupsAndSchedulesToList(scheduleFilename);
         saveStudentGroupsAndSchedulesToDatabase(studentGroupDao, dayScheduleDao, excelParser.getGroups(), excelParser.getSchedules());

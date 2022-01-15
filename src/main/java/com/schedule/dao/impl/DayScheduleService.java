@@ -4,7 +4,7 @@ import com.schedule.dao.DayScheduleDao;
 import com.schedule.modal.DaySchedule;
 import com.schedule.modal.StudentGroup;
 import com.schedule.repository.DayScheduleRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -14,10 +14,10 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class DayScheduleService implements DayScheduleDao {
 
-    @Autowired
-    DayScheduleRepository dayScheduleRepository;
+    private final DayScheduleRepository dayScheduleRepository;
 
     @Override
     public Optional<DaySchedule> get(Long id) {

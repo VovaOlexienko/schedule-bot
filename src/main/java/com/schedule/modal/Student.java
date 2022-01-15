@@ -1,42 +1,40 @@
 package com.schedule.modal;
 
-import com.schedule.bot.user.states.UserState;
-import com.schedule.utils.Constants;
-import lombok.*;
+import com.schedule.bot.security.UserRole;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.util.Locale;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 @Entity
 @Setter
 @Getter
+@Builder
 @NoArgsConstructor
-@ToString
+@AllArgsConstructor
 public class Student {
 
     @Id
-    @GeneratedValue(generator = Constants.ID_GENERATOR)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Long chatId;
 
-    @NotNull
-    private UserState userState;
-
-    @NotNull
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private UserRole userRole;
 
-    @NotNull
-    private Locale locale;
-
-    @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn
     private StudentGroup studentGroup;
-
-    public Student(Long chatId) {
-        this.chatId = chatId;
-    }
 }

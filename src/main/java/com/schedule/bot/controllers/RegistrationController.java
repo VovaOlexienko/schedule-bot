@@ -5,30 +5,73 @@ import com.github.kshashov.telegram.api.bind.annotation.BotController;
 import com.github.kshashov.telegram.api.bind.annotation.request.CallbackQueryRequest;
 import com.github.kshashov.telegram.api.bind.annotation.request.MessageRequest;
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.model.*;
+import com.pengrad.telegrambot.model.CallbackQuery;
+import com.pengrad.telegrambot.model.Chat;
+import com.pengrad.telegrambot.model.Document;
+import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.request.GetFile;
-import com.pengrad.telegrambot.request.SendMessage;
-import com.pengrad.telegrambot.request.SendPhoto;
 import com.pengrad.telegrambot.response.GetFileResponse;
+import com.schedule.bot.context.UserContext;
+import com.schedule.bot.registration.RegistrationRequest;
+import com.schedule.bot.registration.states.StartRegistrationState;
 import com.schedule.bot.security.RolesAllowed;
-import com.schedule.bot.user.BotContext;
-import com.schedule.bot.user.states.StartState;
-import com.schedule.dao.StudentDao;
-import com.schedule.modal.Role;
-import com.schedule.modal.Student;
-import com.schedule.utils.KeyboardUtils;
+import com.schedule.bot.security.UserRole;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.util.Locale;
+import java.util.Objects;
 
 @BotController
+@RequiredArgsConstructor
 public class RegistrationController implements TelegramMvcController {
+
+    private final StartRegistrationState startState;
+    private UserContext userContext;
+
+    @Value("${schedule.filename}")
+    private String scheduleFileName;
+
+    @MessageRequest(value = "/start")
+    public BaseRequest start(Chat chat, String text) {
+        return startState.enter(new RegistrationRequest(chat, text));
+    }
+
+    @RolesAllowed(roles = {UserRole.ADMIN, UserRole.USER, UserRole.UNREGISTERED})
+    @MessageRequest(value = "**")
+    public BaseRequest nextRegistrationState(Chat chat, String text, Update update, TelegramBot bot) {
+        saveFileFromTelegram(bot, update, scheduleFileName);
+        return userContext.getUserRegistrationState().enter(new RegistrationRequest(chat, text));
+    }
+
+    @RolesAllowed(roles = {UserRole.ADMIN, UserRole.USER})
+    @CallbackQueryRequest(value = "changeStudentGroup")
+    public BaseRequest changeStudentGroup(Chat chat, String text, TelegramBot bot, CallbackQuery callbackQuery) {
+        return startState.enter(new RegistrationRequest(chat, text));
+    }
+
+    @SneakyThrows
+    private void saveFileFromTelegram(TelegramBot bot, Update update, String filename) {
+        if (Objects.nonNull(userContext.getStudent()) && userContext.getStudent().getUserRole() == UserRole.ADMIN) {
+            Document document = update.message().document();
+            if (update.message().caption().equals("/updateSchedule") || document.fileName().endsWith(".xlsx")) {
+                GetFileResponse getFileResponse = bot.execute(new GetFile(document.fileId()));
+                URL url = new URL(String.format("https://api.telegram.org/file/bot%s/%s", token, getFileResponse.file().filePath()));
+                FileUtils.copyInputStreamToFile(url.openStream(), new java.io.File(filename));
+            } else {
+                throw new IllegalArgumentException("Bad type of file!");
+            }
+        }
+    }
+
+    @Autowired
+    public void setUserContext(UserContext userContext) {
+        this.userContext = userContext;
+    }
 
     @Value("${telegram.bot.token}")
     private String token;
@@ -36,72 +79,5 @@ public class RegistrationController implements TelegramMvcController {
     @Override
     public String getToken() {
         return token;
-    }
-
-    @Autowired
-    StudentDao studentDao;
-    @Autowired
-    StartState startState;
-    @Autowired
-    KeyboardUtils keyboardUtils;
-
-    @Value("${schedule.filename}")
-    String scheduleFileName;
-
-    @MessageRequest(value = "/start")
-    public BaseRequest start(Chat chat) {
-        return new SendPhoto(chat.id(), "https://web-static.wrike.com/blog/content/uploads/2020/01/Five-Features-of-a-Good-Monthly-Employee-Work-Schedule-Template-896x518.jpg?av=4e36fdf9890d9fb8b26460d2ce565b3c").replyMarkup(keyboardUtils.getLanguagesKeyboard());
-    }
-
-    @CallbackQueryRequest(value = "language/english")
-    public BaseRequest chooseEnglishLanguage(TelegramBot bot, Chat chat, CallbackQuery callbackQuery, User user, String text) {
-        return startState.enter(new BotContext(chat, user, text, Locale.ENGLISH));
-    }
-
-    @CallbackQueryRequest(value = "language/ukrainian")
-    public BaseRequest chooseUkrainianLanguage(TelegramBot bot, Chat chat, CallbackQuery callbackQuery, User user, String text) {
-        return startState.enter(new BotContext(chat, user, text, new Locale("uk")));
-    }
-
-    @CallbackQueryRequest(value = "language/russian")
-    public BaseRequest chooseRussianLanguage(TelegramBot bot, Chat chat, CallbackQuery callbackQuery, User user, String text) {
-        return startState.enter(new BotContext(chat, user, text, new Locale("ru")));
-    }
-
-    @RolesAllowed(roles = {Role.Admin, Role.User})
-    @CallbackQueryRequest(value = "changeStudentGroup")
-    public BaseRequest changeStudentGroup(TelegramBot bot, Chat chat, CallbackQuery callbackQuery, User user, String text) {
-        return startState.enter(new BotContext(chat, user, text));
-    }
-
-    @RolesAllowed(roles = {Role.Admin, Role.User, Role.Unregistered})
-    @MessageRequest(value = "**")
-    public BaseRequest enterTextOrFile(Update update, TelegramBot bot, Chat chat, User user, String text) {
-        Student student = studentDao.getByChatId(chat.id()).get();
-        try {
-            return ifAdminQueryThenProcess(student, update, bot, chat);
-        } catch (Exception ignored) {
-        }
-        return student.getUserState().enter(new BotContext(chat, user, text));
-    }
-
-    private SendMessage ifAdminQueryThenProcess(Student student, Update update, TelegramBot bot, Chat chat) throws Exception {
-        if (!student.getRole().equals(Role.Admin) || update.message().document() == null)
-            throw new Exception("No admin query");
-        return new SendMessage(chat.id(), saveFileFromTelegram(bot, update.message().document(), scheduleFileName) ? "Success" : "Fail");
-    }
-
-    public synchronized boolean saveFileFromTelegram(TelegramBot bot, Document document, String filename) {
-        GetFile getFile = new GetFile(document.fileId());
-        GetFileResponse getFileResponse = bot.execute(getFile);
-        java.io.File localFile = new java.io.File(filename);
-        try {
-            InputStream is = new URL("https://api.telegram.org/file/bot" + token + "/" + getFileResponse.file().filePath()).openStream();
-            FileUtils.copyInputStreamToFile(is, localFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
     }
 }

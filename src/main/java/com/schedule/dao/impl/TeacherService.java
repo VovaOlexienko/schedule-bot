@@ -3,7 +3,7 @@ package com.schedule.dao.impl;
 import com.schedule.dao.TeacherDao;
 import com.schedule.modal.Teacher;
 import com.schedule.repository.TeacherRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +13,10 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class TeacherService implements TeacherDao {
 
-    @Autowired
-    TeacherRepository teacherRepository;
+    private final TeacherRepository teacherRepository;
 
     @Override
     public Optional<Teacher> get(Long id) {

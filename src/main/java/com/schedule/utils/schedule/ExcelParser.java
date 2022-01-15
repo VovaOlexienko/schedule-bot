@@ -3,7 +3,6 @@ package com.schedule.utils.schedule;
 import com.aspose.cells.ImageType;
 import com.schedule.modal.DaySchedule;
 import com.schedule.modal.StudentGroup;
-import com.schedule.utils.StringUtils;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -95,7 +94,7 @@ public class ExcelParser {
             while (true) {
                 Cell cell = sheet.getRow(row).getCell(column);
                 if (getStringCellValue(cell).matches(".*\\d.*")) {
-                    groups.add(new StudentGroup(null, StringUtils.trim(getStringCellValue(cell))));
+                    groups.add(new StudentGroup(null, trim(getStringCellValue(cell))));
                 } else {
                     break;
                 }
@@ -157,7 +156,7 @@ public class ExcelParser {
             case "Субота":
                 return DayOfWeek.SATURDAY;
             default:
-                return DayOfWeek.SUNDAY;
+                throw new Exception();//
         }
     }
 
@@ -208,8 +207,9 @@ public class ExcelParser {
                     break;
                 }
             }
-            String value = StringUtils.trim(getStringCellValue(sheet.getRow(row).getCell(column)));
+            String value = trim(getStringCellValue(sheet.getRow(row).getCell(column)));
             for (int j = 0; j < numberOfGroupOnLesson; j++) {
+                System.out.print(sheet.getSheetName());
                 sheet.addMergedRegion(new CellRangeAddress(row, row + height - 1, column, column + 1));
                 sheet.getRow(row).getCell(column).setCellValue(value);
                 column += 3;
@@ -311,5 +311,9 @@ public class ExcelParser {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         sr.toImage(0, stream);
         return stream;
+    }
+
+    private static String trim(String s) {
+        return s.trim().replaceAll(" +", " ");
     }
 }

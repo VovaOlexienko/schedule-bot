@@ -12,6 +12,6 @@ import java.util.List;
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     List<Teacher> findByFullnameContainingIgnoreCase(String fullname, Pageable pageable);
 
-    @Query("select new Teacher (t.id, t.fullname, t.universityEmail, t.email, t.tgNickname, t.photoUrl, t.phone) from Teacher t")
+    @Query("select new Teacher (t.id, t.fullname, t.universityEmail, t.email, t.tgNickname, t.photoUrl) from Teacher t")
     List<Teacher> getAll(Pageable pageable);
 }

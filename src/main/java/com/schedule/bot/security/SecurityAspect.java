@@ -1,43 +1,54 @@
 package com.schedule.bot.security;
 
-import com.schedule.dao.StudentDao;
-import com.schedule.modal.Role;
+import com.pengrad.telegrambot.request.SendMessage;
+import com.schedule.bot.context.UserContext;
 import com.schedule.modal.Student;
-import com.schedule.utils.AnnotationUtils;
+import lombok.SneakyThrows;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 
 @Aspect
+@Order(2)
 @Component
 public class SecurityAspect {
 
-    @Autowired
-    private StudentDao studentDao;
+    private UserContext userContext;
 
     @Pointcut("@annotation(RolesAllowed)")
     public void rolesAllowed() {
+        //Validate user role for request
     }
 
-    @Before("rolesAllowed()")
-    public void validateUserRole(JoinPoint joinPoint) throws Exception {
-        Role[] roles = getRoles(joinPoint);
-        Student student = studentDao.getByChatId(AnnotationUtils.getChat(joinPoint).id())
-                .orElseThrow(() -> new Exception("Unregistered user"));
-        if (!Arrays.asList(roles).contains(student.getRole())) throw new Exception("Access denied");
+    @SneakyThrows
+    @Around("rolesAllowed()")
+    public Object validateUserRole(ProceedingJoinPoint joinPoint) {
+        Student student = userContext.getStudent();
+        if (!getRoles(joinPoint).contains(student.getUserRole())) {
+            return new SendMessage(student.getChatId(), "Access denied");
+        }
+        return joinPoint.proceed(joinPoint.getArgs());
     }
 
-    private Role[] getRoles(JoinPoint joinPoint) {
+    private List<UserRole> getRoles(JoinPoint joinPoint) {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
         RolesAllowed allow = method.getAnnotation(RolesAllowed.class);
-        return allow.roles();
+        return Arrays.asList(allow.roles());
+    }
+
+    @Autowired
+    public void setUserContext(UserContext userContext) {
+        this.userContext = userContext;
     }
 }
